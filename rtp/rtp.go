@@ -98,8 +98,8 @@ type FrameInfo struct {
 
 type SubFrameInfo struct {
 	NaluType int
-	data     []byte
-	rtpData  []byte
+	Data     []byte
+	RtpData  []byte
 }
 
 type RTPPack struct {
@@ -166,7 +166,7 @@ func (rtp *RtpTransfer) GetH264FrameSlices(rtpData []byte) (frameSlices *FrameIn
 		frameSlices.NaluType = int(naluType)
 		frameSlices.DataLen = len(rtpHeaderInfo.Payload)
 		dataHasRTP := rtpData[len(rtpData)-len(rtpHeaderInfo.Payload)-RTP_HEADER_LEN:]
-		frameSlices.SubFrameInfos = append(frameSlices.SubFrameInfos, SubFrameInfo{NaluType: int(naluType), data: rtpHeaderInfo.Payload, rtpData: dataHasRTP})
+		frameSlices.SubFrameInfos = append(frameSlices.SubFrameInfos, SubFrameInfo{NaluType: int(naluType), Data: rtpHeaderInfo.Payload, RtpData: dataHasRTP})
 		return frameSlices, nil
 
 	case naluType == 28: // FU-A
@@ -178,12 +178,12 @@ func (rtp *RtpTransfer) GetH264FrameSlices(rtpData []byte) (frameSlices *FrameIn
 		if isStart {
 			ResetFrameInfo(frameSlices, rtpHeaderInfo)
 			frameSlices.NaluType = int(fuHeader & 0x1f)
-			frameSlices.SubFrameInfos = append(frameSlices.SubFrameInfos, SubFrameInfo{NaluType: frameSlices.NaluType, data: []byte{(fuIndicator & 0xe0) | (fuHeader & 0x1f)}, rtpData: nil})
+			frameSlices.SubFrameInfos = append(frameSlices.SubFrameInfos, SubFrameInfo{NaluType: frameSlices.NaluType, Data: []byte{(fuIndicator & 0xe0) | (fuHeader & 0x1f)}, RtpData: nil})
 			frameSlices.DataLen += 1
-			frameSlices.SubFrameInfos = append(frameSlices.SubFrameInfos, SubFrameInfo{NaluType: frameSlices.NaluType, data: nalu[2:], rtpData: dataHasRTP})
+			frameSlices.SubFrameInfos = append(frameSlices.SubFrameInfos, SubFrameInfo{NaluType: frameSlices.NaluType, Data: nalu[2:], RtpData: dataHasRTP})
 			frameSlices.DataLen += len(nalu[2:])
 		} else {
-			frameSlices.SubFrameInfos = append(frameSlices.SubFrameInfos, SubFrameInfo{NaluType: frameSlices.NaluType, data: nalu[2:], rtpData: dataHasRTP})
+			frameSlices.SubFrameInfos = append(frameSlices.SubFrameInfos, SubFrameInfo{NaluType: frameSlices.NaluType, Data: nalu[2:], RtpData: dataHasRTP})
 			frameSlices.DataLen += len(nalu[2:])
 		}
 		if isEnd {
